@@ -7,6 +7,7 @@ import {config} from "dotenv";
 const _config = {
     port:process.env.PORT ,
     dbUrl:process.env.MONGO_CONNECTION_STRING,
+    env:process.env.NODE_ENV
 }
 
 // console.log(process.env.PORT);
