@@ -6,7 +6,7 @@ import userRouter from "./user/userRouter";
 // import { create } from "domain";
 // import { error } from "console";
 const app = express()
-
+app.use(express.json())
 // endpoint - ROUTES
 // http methods - get,post,put,patch,delete
 

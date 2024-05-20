@@ -7,7 +7,8 @@ import {config} from "dotenv";
 const _config = {
     port:process.env.PORT ,
     dbUrl:process.env.MONGO_CONNECTION_STRING,
-    env:process.env.NODE_ENV
+    env:process.env.NODE_ENV,
+    jwtSecret : process.env.JWT_SECRET
 }
 
 // console.log(process.env.PORT);
