@@ -4,8 +4,11 @@ import { conf } from './config';
 
 
     // Configuration
-    cloudinary.config({ 
+ export  default  cloudinary.config({ 
         cloud_name: conf.cloudName, 
         api_key: conf.cloudApiKey, 
         api_secret:conf.cloudApiSecret 
     });
+
+
+    

@@ -9,7 +9,7 @@ const _config = {
     dbUrl:process.env.MONGO_CONNECTION_STRING,
     env:process.env.NODE_ENV,
     jwtSecret : process.env.JWT_SECRET,
-    cloudName: process.env.LOUDINARY_CLOUD ,
+    cloudName: process.env.CLOUDINARY_CLOUD ,
     cloudApiKey: process.env.CLOUDINARY_APIKEY ,
     cloudApiSecret:process.env.CLOUDINARY_APISECRET
 }
