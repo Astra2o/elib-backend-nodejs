@@ -105,7 +105,7 @@ try {
     if(!book){
         return next(createHttpError(404,'book not found'))
     }
-    console.log(book.coverImg);
+    // console.log(book.coverImg);
     
 
 // check access only autorized user
@@ -165,6 +165,21 @@ try {
 
     }
 
+    const coverFileSplits =book.coverImg.split('/');
+    const coverImgPublicId =coverFileSplits.at(-2)+'/'+ coverFileSplits.at(-1)?.split('.').at(-2);
+
+    const bookFileSplits =book.file.split('/');
+    
+    const bookFilePublicId =bookFileSplits.at(-2)+'/'+ bookFileSplits.at(-1);
+    // console.log(bookFilePublicId);
+try {
+    
+    await cloudinary.uploader.destroy(coverImgPublicId)
+    await cloudinary.uploader.destroy(bookFilePublicId,{resource_type:'raw'})
+} catch (error) {
+    return next(createHttpError(500,'error deleting on cloudnary'))
+}
+
     const updatedBook = await bookModel.findOneAndUpdate(
         {_id:bookId},
         {
@@ -184,22 +199,6 @@ try {
     console.log(error,'error');
     
 }
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
-
-
 
 
 
@@ -236,4 +235,40 @@ const getOneBook = async  (req:Request,res:Response,next:NextFunction)=>{
 }
 
 
-export {createBook,updateBook,booksList,getOneBook}
+const deleteBook =  async  (req:Request,res:Response,next:NextFunction)=>{
+
+    const bookId = req.params.bookId;
+    const book = await bookModel.findOne({_id:bookId})    ;   // return all books/ entries from databases  // task : use pagenation
+                
+    if(!book){
+      return next(createHttpError(404,'book not found'))
+    }
+
+    // check access only autorized user
+
+    const _req= req as AuthRequest;
+
+    if(book.author.toString() !== _req.userId){
+        return next(createHttpError(403,'Unautorized - you can`t update others book'));
+    }
+
+    const resultOfDeleteBook = await bookModel.deleteOne({_id:bookId});
+
+    const coverFileSplits =book.coverImg.split('/');
+    const coverImgPublicId =coverFileSplits.at(-2)+'/'+ coverFileSplits.at(-1)?.split('.').at(-2);
+
+    const bookFileSplits =book.file.split('/');
+    
+    const bookFilePublicId =bookFileSplits.at(-2)+'/'+ bookFileSplits.at(-1);
+    console.log(bookFilePublicId);
+try {
+    
+    await cloudinary.uploader.destroy(coverImgPublicId)
+    await cloudinary.uploader.destroy(bookFilePublicId,{resource_type:'raw'})
+} catch (error) {
+    return next(createHttpError(500,'error deleting on cloudnary'))
+}
+    return res.json(resultOfDeleteBook)
+}
+
+export {createBook,updateBook,booksList,getOneBook,deleteBook}
