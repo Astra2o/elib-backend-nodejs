@@ -11,7 +11,8 @@ const _config = {
     jwtSecret : process.env.JWT_SECRET,
     cloudName: process.env.CLOUDINARY_CLOUD ,
     cloudApiKey: process.env.CLOUDINARY_APIKEY ,
-    cloudApiSecret:process.env.CLOUDINARY_APISECRET
+    cloudApiSecret:process.env.CLOUDINARY_APISECRET,
+    corsFrontEndDomain : process.env.FRONTEND_DOMAIN
 }
 
 // console.log(process.env.PORT);
