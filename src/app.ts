@@ -16,6 +16,7 @@ app.use(cors({
 }))
 
 app.use(express.json())
+
 // endpoint - ROUTES
 // http methods - get,post,put,patch,delete
 

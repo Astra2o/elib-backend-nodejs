@@ -25,7 +25,7 @@ const createBook = async (req:Request,res:Response,next:NextFunction) => {
     // const {}=req.body;
     // console.log('files',req.files);
     try {
-        const {title,genre}=req.body;
+        const {title,genre,description}=req.body;
         const files = req.files as {[filename:string]:Express.Multer.File[]}
         const coverImageMimeType=files.coverImg[0].mimetype.split('/').at(-1);
         // console.log(coverImageMimeType);
@@ -36,10 +36,10 @@ const createBook = async (req:Request,res:Response,next:NextFunction) => {
 
         const bookFileName = files.file[0].filename;
         const bookFilepath = path.resolve(__dirname,'../../public/data/uploads',bookFileName)
-       
+       let uploadResult,uploadFileResult
 
         try {
-            const uploadResult =await cloudinary.uploader        // here is an error 
+             uploadResult =await cloudinary.uploader        // here is an error 
             .upload(filepath,{                                    //  error TypeError: Cannot read properties of undefined (reading 'upload')
                 filename_override:filename,
                 // public_id:'bookcover',
@@ -47,7 +47,7 @@ const createBook = async (req:Request,res:Response,next:NextFunction) => {
                 format:coverImageMimeType 
             })
 
-            const uploadFileResult =await cloudinary.uploader        // here is an error 
+             uploadFileResult =await cloudinary.uploader        // here is an error 
             .upload(bookFilepath,{
                 resource_type:'raw',                                    //  error TypeError: Cannot read properties of undefined (reading 'upload')
                 filename_override:bookFileName,
@@ -56,34 +56,42 @@ const createBook = async (req:Request,res:Response,next:NextFunction) => {
                 format:'pdf' 
             })
             //  console.log(uploadResult,uploadFileResult);
-            // @ts-ig nore
-            const _req= req as AuthRequest;
-        //    console.log('userId',_req.userId);
-           
-             // save upload link in database
-
-             const newBook = await bookModel.create({
-                title,
-                genre,
-                author:_req.userId,
-                coverImg:uploadResult.secure_url,
-                file:uploadFileResult.secure_url
-
-            })
-
-            // delete  the temp files that created by multer after uploding on cloudnary and stoe link in the db
-
-            await fs.promises.unlink(filepath);
-            await fs.promises.unlink(bookFilepath);
-           
-            res.status(201).json({id:newBook._id})
-
+       
         } catch (error) {
             console.log(error);
             return next(createHttpError(500,'error while uploading the files'))
             
         }
-        
+    let newBook;
+        try {
+              // @ts-ig nore
+              const _req= req as AuthRequest;
+              //    console.log('userId',_req.userId);
+                 
+                   // save upload link in database
+      
+                    newBook = await bookModel.create({
+                      title,
+                      genre,
+                      description,
+                      author:_req.userId,
+                      coverImg:uploadResult.secure_url,
+                      file:uploadFileResult.secure_url
+      
+                  })
+        } catch (error) {
+            return next(createHttpError(500,'error while uploading data in db'))
+
+        }
+           
+     
+                 // delete  the temp files that created by multer after uploding on cloudnary and stoe link in the db
+     
+                 await fs.promises.unlink(filepath);
+                 await fs.promises.unlink(bookFilepath);
+                
+                 res.status(201).json({id:newBook._id})
+     
         
     } catch (error) {
         console.log('error', error); 
@@ -98,7 +106,7 @@ const updateBook =async (req:Request,res:Response,next:NextFunction)=>{
 try {
     
 
-    const {title,genre}=req.body;
+    const {title,genre,description}=req.body;
     const bookId = req.params.bookId;
 
     const book = await bookModel.findOne({_id:bookId});
@@ -185,6 +193,7 @@ try {
         {
           title,
           genre,
+          description,
           coverImg:completeCoverImg?completeCoverImg : book.coverImg ,
           file: completeFileName?completeFileName:book.file
         },
@@ -208,7 +217,7 @@ try {
 const booksList = async  (req:Request,res:Response,next:NextFunction)=>{
 
     try {
-        const allBooks = await bookModel.find()    ;   // return all books/ entries from databases  // task : use pagenation
+        const allBooks = await bookModel.find().populate('author','name')    ;   // return all books/ entries from databases  // task : use pagenation
     return res.json(allBooks)
 
     } catch (error) {
@@ -222,7 +231,7 @@ const getOneBook = async  (req:Request,res:Response,next:NextFunction)=>{
     const bookId= req.params.bookId
     try {
 
-        const book = await bookModel.findOne({_id:bookId})    ;   // return all books/ entries from databases  // task : use pagenation
+        const book = await bookModel.findOne({_id:bookId}).populate('author','name')     ;   // return all books/ entries from databases  // task : use pagenation
                 
         if(!book){
           return next(createHttpError(404,'book not found'))
